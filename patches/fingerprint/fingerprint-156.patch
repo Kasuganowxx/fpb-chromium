@@ -3193,7 +3193,7 @@ index 270c78b..6bdf909 100644
  
    if (*timezone == icu::TimeZone::getUnknown()) {
 diff --git a/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc b/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
-index 9c3fddd..110cd80 100644
+index 9c3fddd..0d6dd91 100644
 --- a/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
 +++ b/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
 @@ -14,6 +14,7 @@
@@ -3212,21 +3212,19 @@ index 9c3fddd..110cd80 100644
  #include "components/viz/common/resources/shared_image_format_utils.h"
  #include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
  #include "third_party/blink/public/common/features.h"
-@@ -564,8 +566,12 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
+@@ -564,7 +566,11 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
            snapshot->PaintImageForCurrentFrame().GetSkImageInfo().bounds();
        DCHECK(!bounds.intersect(SkIRect::MakeXYWH(sx, sy, sw, sh)));
      }
 -    if (read_pixels_successful && RuntimeEnabledFeatures::FingerprintingCanvasImageDataNoiseEnabled()) {
--      StaticBitmapImage::ShuffleSubchannelColorData(image_data_pixmap.addr(), image_data_pixmap.info());
 +
 +    const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +    if (read_pixels_successful && command_line->HasSwitch(switches::kFingerprint) &&
 +        (!command_line->HasSwitch(switches::kDisableSpoofing) ||
 +         command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
-+      StaticBitmapImage::ShuffleSubchannelColorData(image_data_pixmap.addr(), image_data_pixmap.info());
+       StaticBitmapImage::ShuffleSubchannelColorData(image_data_pixmap.addr(), image_data_pixmap.info());
      }
    }
- 
 @@ -1267,14 +1273,25 @@ TextMetrics* BaseRenderingContext2D::measureText(const String& text) {
        host->GetPlainTextPainter());
  
@@ -3259,7 +3257,7 @@ index 9c3fddd..110cd80 100644
    }
    return text_metrics;
 diff --git a/third_party/blink/renderer/modules/webaudio/offline_audio_context.cc b/third_party/blink/renderer/modules/webaudio/offline_audio_context.cc
-index 0ff28ef..cee65a8 100644
+index 0ff28ef..f586e51 100644
 --- a/third_party/blink/renderer/modules/webaudio/offline_audio_context.cc
 +++ b/third_party/blink/renderer/modules/webaudio/offline_audio_context.cc
 @@ -25,9 +25,11 @@
@@ -4520,7 +4518,7 @@ index c9d21e3..7742aaf 100644
    // This only works for convex quads.
    // This intersection is edge-inclusive and will return true even if the
 diff --git a/v8/src/inspector/v8-runtime-agent-impl.cc b/v8/src/inspector/v8-runtime-agent-impl.cc
-index 0120bbd..2cc264f 100644
+index 0120bbd..8948980 100644
 --- a/v8/src/inspector/v8-runtime-agent-impl.cc
 +++ b/v8/src/inspector/v8-runtime-agent-impl.cc
 @@ -1074,32 +1074,33 @@ void V8RuntimeAgentImpl::bindingCalled(const String16& name,

@@ -39,10 +39,12 @@ def patch_targets(text):
 
 
 def run_patch(tree, patch_file, reverse):
+    # Forward uses the same flags as utils/patches.py. Reverse needs --binary: GNU patch strips a
+    # trailing CR from patch lines but the forward apply wrote it into the file, so the hunk won't match.
     cmd = [str(PATCH_BIN), '-p1', '--ignore-whitespace', '-i', str(patch_file), '-d', str(tree),
            '--no-backup-if-mismatch', '--batch', '--remove-empty-files']
     if reverse:
-        cmd.append('--reverse')
+        cmd += ['--reverse', '--binary']
     subprocess.run(cmd, check=True)
 
 
