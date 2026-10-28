@@ -22,12 +22,24 @@ async function run() {
     const artifact = new DefaultArtifactClient();
     const artifactName = x86 ? 'build-artifact-x86' : (arm ? 'build-artifact-arm' : 'build-artifact');
 
-    if (from_artifact) {
-        await exec.exec(process.execPath, [`${import.meta.dirname}\\download.js`, artifactName,
-            'C:\\ungoogled-chromium-windows\\build']);
+    const resume_run_id = from_artifact ? '' : core.getInput('resume_run_id').trim();
+    const download_args = [`${import.meta.dirname}\\download.js`, artifactName, 'C:\\ungoogled-chromium-windows\\build'];
+    if (resume_run_id) {
+        download_args.push(resume_run_id);
+        console.log(`resuming from artifact ${artifactName} of run ${resume_run_id}`);
+    }
+    if (from_artifact || resume_run_id) {
+        await exec.exec(process.execPath, download_args,
+            resume_run_id ? {env: {...process.env, GITHUB_TOKEN: core.getInput('github_token')}} : {});
         await exec.exec('7z', ['x', 'C:\\ungoogled-chromium-windows\\build\\artifacts.zip',
             '-oC:\\ungoogled-chromium-windows\\build', '-y']);
         await io.rmRF('C:\\ungoogled-chromium-windows\\build\\artifacts.zip');
+    }
+    if (resume_run_id) {
+        await exec.exec('python', ['.github\\scripts\\resume_sync.py', resume_run_id], {
+            cwd: 'C:\\ungoogled-chromium-windows',
+            env: {...process.env, GITHUB_TOKEN: core.getInput('github_token')}
+        });
     }
 
     const args = ['build.py', '--ci', '-j', '2']

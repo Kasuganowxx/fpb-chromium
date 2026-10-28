@@ -1,12 +1,19 @@
 name: build-x64
 on:
   workflow_dispatch:
+    inputs:
+      resume_run_id:
+        description: Resume from the build-artifact of this run id (it keeps 4 days); empty starts from scratch
+        type: string
+        required: false
+        default: ''
   push:
     tags:
       - '*'
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: build-x64-${{ github.ref }}
@@ -15,3 +22,5 @@ concurrency:
 jobs:
   build:
     uses: ./.github/workflows/reusable-build.yml
+    with:
+      resume_run_id: ${{ inputs.resume_run_id || '' }}

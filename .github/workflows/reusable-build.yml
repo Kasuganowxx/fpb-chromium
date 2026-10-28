@@ -14,6 +14,11 @@ on:
         type: boolean
         required: false
         default: false
+      resume_run_id:
+        description: Run id whose build artifact build-1 restores instead of starting from scratch
+        type: string
+        required: false
+        default: ''
 
 jobs:
   build-1:
@@ -32,6 +37,8 @@ jobs:
         with:
           finished: false
           from_artifact: false
+          resume_run_id: ${{ inputs.resume_run_id }}
+          github_token: ${{ github.token }}
           x86: ${{ inputs.x86 }}
           arm: ${{ inputs.arm }}
     outputs:

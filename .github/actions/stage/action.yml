@@ -7,6 +7,14 @@ inputs:
   from_artifact:
     description: If a previous stage already uploaded build artifacts, the stage will resume building
     required: true
+  resume_run_id:
+    description: When from_artifact is false, restore the build directory from this run's build artifact instead of starting from scratch
+    required: false
+    default: ''
+  github_token:
+    description: Token with actions read permission, used to download the artifact of resume_run_id
+    required: false
+    default: ''
   x86:
     description: Build x86 binary
     required: false
