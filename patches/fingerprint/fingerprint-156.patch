@@ -2692,7 +2692,7 @@ index c22be67..7659a16 100644
    if (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) &&
        features::kDelayAsyncScriptExecutionDelayByDefaultParam.Get()) {
 diff --git a/third_party/blink/renderer/core/dom/element.cc b/third_party/blink/renderer/core/dom/element.cc
-index e8a82cf..e5671e0 100644
+index e8a82cf..f1848eb 100644
 --- a/third_party/blink/renderer/core/dom/element.cc
 +++ b/third_party/blink/renderer/core/dom/element.cc
 @@ -32,10 +32,12 @@
@@ -2713,11 +2713,11 @@ index e8a82cf..e5671e0 100644
  }
  
 +bool Element::ShouldSkipClientRectsOffset() const {
-+  if (!GetLayoutObject() || !GetLayoutObject()->Style()) {
++  if (!GetLayoutObject()) {
 +    return false;
 +  }
 +
-+  const ComputedStyle& style = *GetLayoutObject()->Style();
++  const ComputedStyle& style = GetLayoutObject()->StyleRef();
 +
 +  // 检查是否为绝对定位
 +  if (style.GetPosition() != EPosition::kAbsolute) {
@@ -2858,20 +2858,21 @@ index 63a3a1e..9e5ca69 100644
    return DOMRect::FromRectF(rect);
  }
 diff --git a/third_party/blink/renderer/core/execution_context/navigator_base.cc b/third_party/blink/renderer/core/execution_context/navigator_base.cc
-index d1f2628..2e10098 100644
+index d1f2628..3dbc1eb 100644
 --- a/third_party/blink/renderer/core/execution_context/navigator_base.cc
 +++ b/third_party/blink/renderer/core/execution_context/navigator_base.cc
-@@ -4,7 +4,9 @@
+@@ -4,7 +4,10 @@
  
  #include "third_party/blink/renderer/core/execution_context/navigator_base.h"
  
 +#include "base/command_line.h"
  #include "base/feature_list.h"
++#include "base/strings/string_util.h"
 +#include "components/ungoogled/ungoogled_switches.h"
  #include "build/build_config.h"
  #include "third_party/blink/public/common/features.h"
  #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-@@ -32,6 +34,19 @@ constexpr char kLinuxX86_64[] = "Linux x86_64";
+@@ -32,6 +35,19 @@ constexpr char kLinuxX86_64[] = "Linux x86_64";
  #endif
  
  String GetReducedNavigatorPlatform() {
@@ -3014,7 +3015,7 @@ index 9e0a578..5199f97 100644
    ua_data->SetMobile(metadata.mobile);
    ua_data->SetPlatform(String::FromUtf8(metadata.platform),
 diff --git a/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc b/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
-index 2a5404e..5eaa7c8 100644
+index 2a5404e..ed31a93 100644
 --- a/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
 +++ b/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
 @@ -34,6 +34,7 @@
@@ -3025,15 +3026,21 @@ index 2a5404e..5eaa7c8 100644
  #include "base/feature_list.h"
  #include "base/functional/callback_helpers.h"
  #include "base/location.h"
-@@ -43,6 +44,7 @@
+@@ -43,8 +44,13 @@
  #include "base/numerics/safe_conversions.h"
  #include "base/trace_event/trace_event.h"
  #include "base/trace_event/typed_macros.h"
 +#include "components/ungoogled/ungoogled_switches.h"
  #include "build/build_config.h"
  #include "cc/layers/texture_layer.h"
++#include "cc/paint/paint_image_builder.h"
++#include "partition_alloc/partition_alloc_constants.h"
++#include "third_party/skia/include/core/SkData.h"
++#include "third_party/skia/include/core/SkImage.h"
  #include "cc/trees/layer_tree_host.h"
-@@ -1459,6 +1461,61 @@ String HTMLCanvasElement::ToDataURLInternal(
+ #include "services/metrics/public/cpp/ukm_recorder.h"
+ #include "services/metrics/public/cpp/ukm_source_id.h"
+@@ -1459,6 +1465,61 @@ String HTMLCanvasElement::ToDataURLInternal(
  
    scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(source_buffer);
    if (image_bitmap) {
