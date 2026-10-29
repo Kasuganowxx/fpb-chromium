@@ -1,5 +1,5 @@
 diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedder_support/user_agent_utils.cc
-index f4b3454..d1baf75 100644
+index f4b3454..54481e1 100644
 --- a/components/embedder_support/user_agent_utils.cc
 +++ b/components/embedder_support/user_agent_utils.cc
 @@ -30,6 +30,7 @@
@@ -39,8 +39,8 @@ index f4b3454..d1baf75 100644
  
  std::string GetUserAgentPlatform() {
 +const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+if (command_line->HasSwitch(switches::kFingerprintPlatform)) {
-+  std::string platform_value = base::ToLowerASCII(command_line->GetSwitchValueASCII(switches::kFingerprintPlatform));
++if (command_line->HasSwitch(::switches::kFingerprintPlatform)) {
++  std::string platform_value = base::ToLowerASCII(command_line->GetSwitchValueASCII(::switches::kFingerprintPlatform));
 +
 +  // 判断自定义平台
 +  if (platform_value == "windows") {
@@ -59,8 +59,8 @@ index f4b3454..d1baf75 100644
  
  std::string GetUnifiedPlatform() {
 +const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+if (command_line->HasSwitch(switches::kFingerprintPlatform)) {
-+  std::string platform_value = base::ToLowerASCII(command_line->GetSwitchValueASCII(switches::kFingerprintPlatform));
++if (command_line->HasSwitch(::switches::kFingerprintPlatform)) {
++  std::string platform_value = base::ToLowerASCII(command_line->GetSwitchValueASCII(::switches::kFingerprintPlatform));
 +
 +  if (platform_value == "windows") {
 +    return "Windows NT 10.0; Win64; x64";
@@ -2325,25 +2325,31 @@ index 957d093..23c6f56 100644
      // (intentionally) different than other client hints.
      // It's barred behind ShouldAddClientHints to make sure it's controlled by
 diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
-index 61153b5..467731c 100644
+index 61153b5..a1b9ced 100644
 --- a/content/browser/renderer_host/render_process_host_impl.cc
 +++ b/content/browser/renderer_host/render_process_host_impl.cc
-@@ -3938,6 +3938,18 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
-       switches::kFingerprintingClientRectsNoise,
-       switches::kFingerprintingCanvasMeasureTextNoise,
-       switches::kFingerprintingCanvasImageDataNoise,
-+      switches::kFingerprint,
-+      switches::kFingerprintBrand,
-+      switches::kFingerprintBrandVersion,
-+      switches::kDisableSpoofing,
-+      switches::kFingerprintScreenWidth,
-+      switches::kFingerprintScreenHeight,
-+      switches::kFingerprintDeviceScaleFactor,
-+      switches::kFingerprintHardwareConcurrency,
-+      switches::kFingerprintPlatform,
-+      switches::kFingerprintPlatformVersion,
-+      switches::kFingerprintLocation,
-+      switches::kFingerprintTimezone,
+@@ -3935,9 +3935,21 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
+       switches::kEnableWebGLDraftExtensions,
+       switches::kEnableWebGPUDeveloperFeatures,
+       switches::kFileUrlPathAlias,
+-      switches::kFingerprintingClientRectsNoise,
+-      switches::kFingerprintingCanvasMeasureTextNoise,
+-      switches::kFingerprintingCanvasImageDataNoise,
++      ::switches::kFingerprintingClientRectsNoise,
++      ::switches::kFingerprintingCanvasMeasureTextNoise,
++      ::switches::kFingerprintingCanvasImageDataNoise,
++      ::switches::kFingerprint,
++      ::switches::kFingerprintBrand,
++      ::switches::kFingerprintBrandVersion,
++      ::switches::kDisableSpoofing,
++      ::switches::kFingerprintScreenWidth,
++      ::switches::kFingerprintScreenHeight,
++      ::switches::kFingerprintDeviceScaleFactor,
++      ::switches::kFingerprintHardwareConcurrency,
++      ::switches::kFingerprintPlatform,
++      ::switches::kFingerprintPlatformVersion,
++      ::switches::kFingerprintLocation,
++      ::switches::kFingerprintTimezone,
        switches::kForceDeviceScaleFactor,
        switches::kForceDisplayColorProfile,
        switches::kForceHighContrast,
@@ -2361,7 +2367,7 @@ index 999d93f..4b6eddf 100644
  #if defined(HEADLESS_USE_PREFS)
  const base::FilePath::CharType kLocalStateFilename[] =
 diff --git a/third_party/blink/common/user_agent/user_agent_metadata.cc b/third_party/blink/common/user_agent/user_agent_metadata.cc
-index 905d30f..8d047e9 100644
+index 905d30f..881f2f3 100644
 --- a/third_party/blink/common/user_agent/user_agent_metadata.cc
 +++ b/third_party/blink/common/user_agent/user_agent_metadata.cc
 @@ -6,9 +6,14 @@
@@ -2468,12 +2474,12 @@ index 905d30f..8d047e9 100644
 +  using namespace ungoogled::fingerprint;
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +
-+  if (command_line->HasSwitch(switches::kFingerprintBrand)) {
++  if (command_line->HasSwitch(::switches::kFingerprintBrand)) {
 +    std::string brand = base::ToLowerASCII(
-+        command_line->GetSwitchValueASCII(switches::kFingerprintBrand));
++        command_line->GetSwitchValueASCII(::switches::kFingerprintBrand));
 +    // 1. Chrome with custom version
-+    if (brand == "chrome" && command_line->HasSwitch(switches::kFingerprintBrandVersion)) {
-+      return command_line->GetSwitchValueASCII(switches::kFingerprintBrandVersion);
++    if (brand == "chrome" && command_line->HasSwitch(::switches::kFingerprintBrandVersion)) {
++      return command_line->GetSwitchValueASCII(::switches::kFingerprintBrandVersion);
 +    }
 +    // 2. Non-Chrome brand (Edge) -> use latest Chromium version
 +    if (brand != "chrome" && !brand.empty()) {
@@ -2482,10 +2488,10 @@ index 905d30f..8d047e9 100644
 +  }
 +
 +  // 3. Check if has fingerprint seed
-+  if (command_line->HasSwitch(switches::kFingerprint)) {
++  if (command_line->HasSwitch(::switches::kFingerprint)) {
 +    int seed = 0;
 +    base::StringToInt(
-+        command_line->GetSwitchValueASCII(switches::kFingerprint), &seed);
++        command_line->GetSwitchValueASCII(::switches::kFingerprint), &seed);
 +    return kChromiumVersions[seed % std::size(kChromiumVersions)];
 +  }
 +
@@ -2505,14 +2511,14 @@ index 905d30f..8d047e9 100644
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +
 +  // 自定义版本优先
-+  if (command_line->HasSwitch(switches::kFingerprintPlatformVersion)) {
-+    return command_line->GetSwitchValueASCII(switches::kFingerprintPlatformVersion);
++  if (command_line->HasSwitch(::switches::kFingerprintPlatformVersion)) {
++    return command_line->GetSwitchValueASCII(::switches::kFingerprintPlatformVersion);
 +  }
 +
 +  int seed = 0;
-+  if (command_line->HasSwitch(switches::kFingerprint)) {
++  if (command_line->HasSwitch(::switches::kFingerprint)) {
 +    base::StringToInt(
-+        command_line->GetSwitchValueASCII(switches::kFingerprint), &seed);
++        command_line->GetSwitchValueASCII(::switches::kFingerprint), &seed);
 +  }
 +
 +  if (platform == "windows") {
@@ -2544,19 +2550,19 @@ index 905d30f..8d047e9 100644
 +  std::optional<blink::UserAgentBrandVersion> additional_brand_major = std::nullopt;
 +  std::optional<blink::UserAgentBrandVersion> additional_brand_full = std::nullopt;
 +
-+  if (command_line->HasSwitch(switches::kFingerprintBrand)) {
++  if (command_line->HasSwitch(::switches::kFingerprintBrand)) {
 +    std::string brand_name = base::ToLowerASCII(
-+        command_line->GetSwitchValueASCII(switches::kFingerprintBrand));
-+    std::string custom_version = command_line->HasSwitch(switches::kFingerprintBrandVersion)
-+        ? command_line->GetSwitchValueASCII(switches::kFingerprintBrandVersion) : "";
++        command_line->GetSwitchValueASCII(::switches::kFingerprintBrand));
++    std::string custom_version = command_line->HasSwitch(::switches::kFingerprintBrandVersion)
++        ? command_line->GetSwitchValueASCII(::switches::kFingerprintBrandVersion) : "";
 +
 +    if (brand_name == "chrome") {
 +      chrome_brand = kChromeDisplayName;
 +    } else if (brand_name == "edge") {
 +      int edge_seed = 0;
-+      if (command_line->HasSwitch(switches::kFingerprint)) {
++      if (command_line->HasSwitch(::switches::kFingerprint)) {
 +        base::StringToInt(
-+            command_line->GetSwitchValueASCII(switches::kFingerprint), &edge_seed);
++            command_line->GetSwitchValueASCII(::switches::kFingerprint), &edge_seed);
 +      }
 +      std::string edge_version = custom_version.empty()
 +          ? kEdgeVersions[edge_seed % std::size(kEdgeVersions)] : custom_version;
@@ -2578,8 +2584,8 @@ index 905d30f..8d047e9 100644
 +  }
 +
 +  // Handle platform information
-+  if (command_line->HasSwitch(switches::kFingerprintPlatform)) {
-+    std::string platform_value = command_line->GetSwitchValueASCII(switches::kFingerprintPlatform);
++  if (command_line->HasSwitch(::switches::kFingerprintPlatform)) {
++    std::string platform_value = command_line->GetSwitchValueASCII(::switches::kFingerprintPlatform);
 +    if (platform_value == "windows") {
 +      metadata->platform = kWindowsPlatform;
 +      metadata->platform_version = GetPlatformVersion("windows");
@@ -2601,14 +2607,14 @@ index 905d30f..8d047e9 100644
 +
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +
-+  if (!command_line->HasSwitch(switches::kFingerprintBrand)) {
++  if (!command_line->HasSwitch(::switches::kFingerprintBrand)) {
 +    return "";
 +  }
 +
 +  std::string brand = base::ToLowerASCII(
-+      command_line->GetSwitchValueASCII(switches::kFingerprintBrand));
-+  std::string version = command_line->HasSwitch(switches::kFingerprintBrandVersion)
-+      ? command_line->GetSwitchValueASCII(switches::kFingerprintBrandVersion)
++      command_line->GetSwitchValueASCII(::switches::kFingerprintBrand));
++  std::string version = command_line->HasSwitch(::switches::kFingerprintBrandVersion)
++      ? command_line->GetSwitchValueASCII(::switches::kFingerprintBrandVersion)
 +      : "";
 +
 +  if (brand == "chrome") {
@@ -2644,7 +2650,7 @@ index 089e424..f4a359d 100644
  
  #endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_USER_AGENT_USER_AGENT_METADATA_H_
 diff --git a/third_party/blink/renderer/core/dom/document.cc b/third_party/blink/renderer/core/dom/document.cc
-index c22be67..7659a16 100644
+index c22be67..69f2b65 100644
 --- a/third_party/blink/renderer/core/dom/document.cc
 +++ b/third_party/blink/renderer/core/dom/document.cc
 @@ -35,6 +35,7 @@
@@ -2672,8 +2678,8 @@ index c22be67..7659a16 100644
 -    noise_factor_x_ = 1 + (base::RandDouble() - 0.5) * 0.000003;
 -    noise_factor_y_ = 1 + (base::RandDouble() - 0.5) * 0.000003;
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprint)) {
-+    std::string seed_str = command_line->GetSwitchValueASCII(switches::kFingerprint);
++  if (command_line->HasSwitch(::switches::kFingerprint)) {
++    std::string seed_str = command_line->GetSwitchValueASCII(::switches::kFingerprint);
 +    // 为x和y使用不同的组合字符串
 +    std::string combined_x = seed_str + "offset_x";
 +    std::string combined_y = seed_str + "offset_y";
@@ -2692,7 +2698,7 @@ index c22be67..7659a16 100644
    if (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) &&
        features::kDelayAsyncScriptExecutionDelayByDefaultParam.Get()) {
 diff --git a/third_party/blink/renderer/core/dom/element.cc b/third_party/blink/renderer/core/dom/element.cc
-index e8a82cf..f1848eb 100644
+index e8a82cf..3f44a32 100644
 --- a/third_party/blink/renderer/core/dom/element.cc
 +++ b/third_party/blink/renderer/core/dom/element.cc
 @@ -32,10 +32,12 @@
@@ -2742,9 +2748,9 @@ index e8a82cf..f1848eb 100644
                                                       *element_layout_object);
    }
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprint) &&
-+      (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+       command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("clientrects") == std::string::npos)) {
++  if (command_line->HasSwitch(::switches::kFingerprint) &&
++      (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++       command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("clientrects") == std::string::npos)) {
 +    if (!ShouldSkipClientRectsOffset()) {
 +      for (auto& rect : rects) {
 +        rect.Offset(GetDocument().GetNoiseFactorX(), GetDocument().GetNoiseFactorY());
@@ -2761,9 +2767,9 @@ index e8a82cf..f1848eb 100644
 -  if (RuntimeEnabledFeatures::FingerprintingClientRectsNoiseEnabled()) {
 -    result.Scale(GetDocument().GetNoiseFactorX(), GetDocument().GetNoiseFactorY());
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprint) &&
-+      (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+       command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("clientrects") == std::string::npos)) {
++  if (command_line->HasSwitch(::switches::kFingerprint) &&
++      (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++       command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("clientrects") == std::string::npos)) {
 +    if (!ShouldSkipClientRectsOffset()) {
 +      result.Offset(GetDocument().GetNoiseFactorX(), GetDocument().GetNoiseFactorY());
 +    }
@@ -2816,7 +2822,7 @@ index f5f967e..ca13d25 100644
      [RaisesException] Element? closest(DOMString selectors);
      [RaisesException] boolean matches(DOMString selectors);
 diff --git a/third_party/blink/renderer/core/dom/range.cc b/third_party/blink/renderer/core/dom/range.cc
-index 63a3a1e..9e5ca69 100644
+index 63a3a1e..4578f0d 100644
 --- a/third_party/blink/renderer/core/dom/range.cc
 +++ b/third_party/blink/renderer/core/dom/range.cc
 @@ -23,6 +23,8 @@
@@ -2834,9 +2840,9 @@ index 63a3a1e..9e5ca69 100644
  
 -  if (RuntimeEnabledFeatures::FingerprintingClientRectsNoiseEnabled()) {
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprint) &&
-+      (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+       command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("clientrects") == std::string::npos)) {
++  if (command_line->HasSwitch(::switches::kFingerprint) &&
++      (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++       command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("clientrects") == std::string::npos)) {
      for (gfx::QuadF& quad : quads) {
 -      quad.Scale(owner_document_->GetNoiseFactorX(), owner_document_->GetNoiseFactorY());
 +      quad.Offset(owner_document_->GetNoiseFactorX(), owner_document_->GetNoiseFactorY());
@@ -2850,15 +2856,15 @@ index 63a3a1e..9e5ca69 100644
 -  if (RuntimeEnabledFeatures::FingerprintingClientRectsNoiseEnabled()) {
 -    rect.Scale(owner_document_->GetNoiseFactorX(), owner_document_->GetNoiseFactorY());
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprint) &&
-+      (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+       command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("clientrects") == std::string::npos)) {
++  if (command_line->HasSwitch(::switches::kFingerprint) &&
++      (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++       command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("clientrects") == std::string::npos)) {
 +    rect.Offset(owner_document_->GetNoiseFactorX(), owner_document_->GetNoiseFactorY());
    }
    return DOMRect::FromRectF(rect);
  }
 diff --git a/third_party/blink/renderer/core/execution_context/navigator_base.cc b/third_party/blink/renderer/core/execution_context/navigator_base.cc
-index d1f2628..3dbc1eb 100644
+index d1f2628..e604000 100644
 --- a/third_party/blink/renderer/core/execution_context/navigator_base.cc
 +++ b/third_party/blink/renderer/core/execution_context/navigator_base.cc
 @@ -4,7 +4,10 @@
@@ -2878,8 +2884,8 @@ index d1f2628..3dbc1eb 100644
  String GetReducedNavigatorPlatform() {
 +const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +
-+if (command_line->HasSwitch(switches::kFingerprintPlatform)) {
-+  std::string custom_platform = base::ToLowerASCII(command_line->GetSwitchValueASCII(switches::kFingerprintPlatform));
++if (command_line->HasSwitch(::switches::kFingerprintPlatform)) {
++  std::string custom_platform = base::ToLowerASCII(command_line->GetSwitchValueASCII(::switches::kFingerprintPlatform));
 +
 +  if (custom_platform == "windows") {
 +    return "Win32";
@@ -2893,7 +2899,7 @@ index d1f2628..3dbc1eb 100644
    if (base::android::device_info::is_desktop() ||
        base::android::device_info::is_xr()) {
 diff --git a/third_party/blink/renderer/core/frame/navigator.cc b/third_party/blink/renderer/core/frame/navigator.cc
-index 583f05f..57816a8 100644
+index 583f05f..3d3eef6 100644
 --- a/third_party/blink/renderer/core/frame/navigator.cc
 +++ b/third_party/blink/renderer/core/frame/navigator.cc
 @@ -21,6 +21,9 @@
@@ -2912,8 +2918,8 @@ index 583f05f..57816a8 100644
  String Navigator::platform() const {
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +
-+  if (command_line->HasSwitch(switches::kFingerprintPlatform)) {
-+    std::string custom_platform = base::ToLowerASCII(command_line->GetSwitchValueASCII(switches::kFingerprintPlatform));
++  if (command_line->HasSwitch(::switches::kFingerprintPlatform)) {
++    std::string custom_platform = base::ToLowerASCII(command_line->GetSwitchValueASCII(::switches::kFingerprintPlatform));
 +
 +    if (custom_platform == "windows") {
 +      return "Win32";
@@ -2938,7 +2944,7 @@ index 583f05f..57816a8 100644
    probe::ApplyAutomationOverride(GetExecutionContext(), automation_enabled);
    return automation_enabled;
 diff --git a/third_party/blink/renderer/core/frame/navigator_concurrent_hardware.cc b/third_party/blink/renderer/core/frame/navigator_concurrent_hardware.cc
-index f5c0db2..da69d2f 100644
+index f5c0db2..ec706e4 100644
 --- a/third_party/blink/renderer/core/frame/navigator_concurrent_hardware.cc
 +++ b/third_party/blink/renderer/core/frame/navigator_concurrent_hardware.cc
 @@ -4,11 +4,27 @@
@@ -2954,14 +2960,14 @@ index f5c0db2..da69d2f 100644
  unsigned NavigatorConcurrentHardware::hardwareConcurrency() const {
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +
-+  if (command_line->HasSwitch(switches::kFingerprintHardwareConcurrency)) {
-+    std::string value = command_line->GetSwitchValueASCII(switches::kFingerprintHardwareConcurrency);
++  if (command_line->HasSwitch(::switches::kFingerprintHardwareConcurrency)) {
++    std::string value = command_line->GetSwitchValueASCII(::switches::kFingerprintHardwareConcurrency);
 +    unsigned long custom_concurrency = std::stoul(value);
 +    return static_cast<unsigned>(custom_concurrency);
 +  }
 +
-+  if (command_line->HasSwitch(switches::kFingerprint)) {
-+    std::string fingerprint_str = command_line->GetSwitchValueASCII(switches::kFingerprint);
++  if (command_line->HasSwitch(::switches::kFingerprint)) {
++    std::string fingerprint_str = command_line->GetSwitchValueASCII(::switches::kFingerprint);
 +    uint32_t fingerprint = static_cast<uint32_t>(std::stoull(fingerprint_str));
 +    return static_cast<unsigned>(((fingerprint % 13) + 4) * 2);
 +  }
@@ -2970,7 +2976,7 @@ index f5c0db2..da69d2f 100644
  }
  
 diff --git a/third_party/blink/renderer/core/frame/navigator_device_memory.cc b/third_party/blink/renderer/core/frame/navigator_device_memory.cc
-index 05fa33e..7db4e91 100644
+index 05fa33e..36a1064 100644
 --- a/third_party/blink/renderer/core/frame/navigator_device_memory.cc
 +++ b/third_party/blink/renderer/core/frame/navigator_device_memory.cc
 @@ -4,6 +4,8 @@
@@ -2989,9 +2995,9 @@ index 05fa33e..7db4e91 100644
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +
 +  // navigator.deviceMemory caps high-memory devices at 32GB.
-+  if (command_line->HasSwitch(switches::kFingerprint)) {
++  if (command_line->HasSwitch(::switches::kFingerprint)) {
 +    std::string fingerprint_str =
-+        command_line->GetSwitchValueASCII(switches::kFingerprint);
++        command_line->GetSwitchValueASCII(::switches::kFingerprint);
 +    uint32_t fingerprint = static_cast<uint32_t>(std::stoull(fingerprint_str));
 +    static const float kDeviceMemoryValues[] = {8, 16, 32};
 +    return kDeviceMemoryValues[fingerprint % 3];
@@ -3015,7 +3021,7 @@ index 9e0a578..5199f97 100644
    ua_data->SetMobile(metadata.mobile);
    ua_data->SetPlatform(String::FromUtf8(metadata.platform),
 diff --git a/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc b/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
-index 2a5404e..ed31a93 100644
+index 2a5404e..e12e35c 100644
 --- a/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
 +++ b/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
 @@ -34,6 +34,7 @@
@@ -3047,9 +3053,9 @@ index 2a5404e..ed31a93 100644
 +
 +    // 添加指纹保护：在创建 ImageDataBuffer 之前修改像素数据副本
 +    const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+    if (command_line->HasSwitch(switches::kFingerprint) &&
-+        (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+         command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
++    if (command_line->HasSwitch(::switches::kFingerprint) &&
++        (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++         command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
 +
 +      // WebGL 和 GPU 加速 2D 画布的快照在显存里，直接 readPixels 会崩渲染进程，先转成内存图。
 +      image_bitmap = image_bitmap->MakeUnaccelerated();
@@ -3124,7 +3130,7 @@ index 5cfbfac..3df7f17 100644
      if (ua_changed) {
        last_ua_ = *ua;
 diff --git a/third_party/blink/renderer/core/timezone/timezone_controller.cc b/third_party/blink/renderer/core/timezone/timezone_controller.cc
-index 270c78b..6bdf909 100644
+index 270c78b..38f9e4e 100644
 --- a/third_party/blink/renderer/core/timezone/timezone_controller.cc
 +++ b/third_party/blink/renderer/core/timezone/timezone_controller.cc
 @@ -6,6 +6,7 @@
@@ -3140,8 +3146,8 @@ index 270c78b..6bdf909 100644
  
  String GetCurrentTimezoneId() {
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprintTimezone)) {
-+    std::string timezone_str = command_line->GetSwitchValueASCII(switches::kFingerprintTimezone);
++  if (command_line->HasSwitch(::switches::kFingerprintTimezone)) {
++    std::string timezone_str = command_line->GetSwitchValueASCII(::switches::kFingerprintTimezone);
 +    if (!timezone_str.empty()) {
 +      return String::FromUtf8(timezone_str);
 +    }
@@ -3157,8 +3163,8 @@ index 270c78b..6bdf909 100644
 +
 +  // Apply --timezone parameter at startup
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprintTimezone)) {
-+    std::string timezone_str = command_line->GetSwitchValueASCII(switches::kFingerprintTimezone);
++  if (command_line->HasSwitch(::switches::kFingerprintTimezone)) {
++    std::string timezone_str = command_line->GetSwitchValueASCII(::switches::kFingerprintTimezone);
 +    if (!timezone_str.empty()) {
 +      SetIcuTimeZoneAndNotifyV8(String::FromUtf8(timezone_str));
 +    }
@@ -3174,8 +3180,8 @@ index 270c78b..6bdf909 100644
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +  String actual_timezone_id;
 +
-+  if (command_line->HasSwitch(switches::kFingerprintTimezone)) {
-+    std::string timezone_str = command_line->GetSwitchValueASCII(switches::kFingerprintTimezone);
++  if (command_line->HasSwitch(::switches::kFingerprintTimezone)) {
++    std::string timezone_str = command_line->GetSwitchValueASCII(::switches::kFingerprintTimezone);
 +    if (!timezone_str.empty()) {
 +      actual_timezone_id = String::FromUtf8(timezone_str);
 +    } else {
@@ -3193,7 +3199,7 @@ index 270c78b..6bdf909 100644
  
    if (*timezone == icu::TimeZone::getUnknown()) {
 diff --git a/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc b/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
-index 9c3fddd..0d6dd91 100644
+index 9c3fddd..1ad0338 100644
 --- a/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
 +++ b/third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.cc
 @@ -14,6 +14,7 @@
@@ -3219,9 +3225,9 @@ index 9c3fddd..0d6dd91 100644
 -    if (read_pixels_successful && RuntimeEnabledFeatures::FingerprintingCanvasImageDataNoiseEnabled()) {
 +
 +    const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+    if (read_pixels_successful && command_line->HasSwitch(switches::kFingerprint) &&
-+        (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+         command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
++    if (read_pixels_successful && command_line->HasSwitch(::switches::kFingerprint) &&
++        (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++         command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
        StaticBitmapImage::ShuffleSubchannelColorData(image_data_pixmap.addr(), image_data_pixmap.info());
      }
    }
@@ -3231,10 +3237,10 @@ index 9c3fddd..0d6dd91 100644
    // Scale text metrics if enabled
 -  if (RuntimeEnabledFeatures::FingerprintingCanvasMeasureTextNoiseEnabled()) {
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprint) &&
-+      (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+       command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
-+    std::string seed_str = command_line->GetSwitchValueASCII(switches::kFingerprint);
++  if (command_line->HasSwitch(::switches::kFingerprint) &&
++      (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++       command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
++    std::string seed_str = command_line->GetSwitchValueASCII(::switches::kFingerprint);
 +    std::string combined_rects_x = seed_str + "clientrects_noise_x";
 +    uint32_t hash_val_x = std::hash<std::string>{}(combined_rects_x);
 +     // 映射到[-0.5, 0.5]范围
@@ -3257,7 +3263,7 @@ index 9c3fddd..0d6dd91 100644
    }
    return text_metrics;
 diff --git a/third_party/blink/renderer/modules/webaudio/offline_audio_context.cc b/third_party/blink/renderer/modules/webaudio/offline_audio_context.cc
-index 0ff28ef..f586e51 100644
+index 0ff28ef..ee75d3d 100644
 --- a/third_party/blink/renderer/modules/webaudio/offline_audio_context.cc
 +++ b/third_party/blink/renderer/modules/webaudio/offline_audio_context.cc
 @@ -25,9 +25,11 @@
@@ -3280,8 +3286,8 @@ index 0ff28ef..f586e51 100644
 +uint32_t getNoiseData(uint32_t number_of_frames) {
 +    // 获取命令行参数
 +    const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+    if (command_line->HasSwitch(switches::kFingerprint)) {
-+        std::string fingerprint_str = command_line->GetSwitchValueASCII(switches::kFingerprint);
++    if (command_line->HasSwitch(::switches::kFingerprint)) {
++        std::string fingerprint_str = command_line->GetSwitchValueASCII(::switches::kFingerprint);
 +        if (!fingerprint_str.empty()) {
 +            // 组合指纹字符串、帧数和常量"audio"
 +            std::string combined = fingerprint_str + std::to_string(number_of_frames) + "audio";
@@ -3302,8 +3308,8 @@ index 0ff28ef..f586e51 100644
 +// 生成基于指纹的采样率噪声（范围 ±0.01）
 +float getSampleRateNoise(float sample_rate) {
 +    const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+    if (command_line->HasSwitch(switches::kFingerprint)) {
-+        std::string fingerprint_str = command_line->GetSwitchValueASCII(switches::kFingerprint);
++    if (command_line->HasSwitch(::switches::kFingerprint)) {
++        std::string fingerprint_str = command_line->GetSwitchValueASCII(::switches::kFingerprint);
 +        if (!fingerprint_str.empty()) {
 +            std::string combined = fingerprint_str + std::to_string(static_cast<int>(sample_rate)) + "samplerate";
 +            uint32_t hash = std::hash<std::string>{}(combined);
@@ -3324,8 +3330,8 @@ index 0ff28ef..f586e51 100644
        total_render_frames_(number_of_frames) {
 +  float adjusted_sample_rate = sample_rate;
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+      command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("audio") == std::string::npos) {
++  if (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++      command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("audio") == std::string::npos) {
 +    adjusted_sample_rate += getSampleRateNoise(sample_rate);
 +  }
 +
@@ -3378,7 +3384,7 @@ index 9eb36fe..9c2b2f0 100644
        return WebGLAny(
 diff --git a/third_party/blink/renderer/modules/webgl/webgl_fingerprint.cc b/third_party/blink/renderer/modules/webgl/webgl_fingerprint.cc
 new file mode 100644
-index 0000000..2570c04
+index 0000000..2c4c69d
 --- /dev/null
 +++ b/third_party/blink/renderer/modules/webgl/webgl_fingerprint.cc
 @@ -0,0 +1,204 @@
@@ -3414,19 +3420,19 @@ index 0000000..2570c04
 +const WebGLConfig* GetActiveWebGLConfig() {
 +  const base::CommandLine* command_line =
 +      base::CommandLine::ForCurrentProcess();
-+  if (!command_line->HasSwitch(switches::kFingerprint)) {
++  if (!command_line->HasSwitch(::switches::kFingerprint)) {
 +    return nullptr;
 +  }
-+  if (command_line->HasSwitch(switches::kDisableSpoofing) &&
-+      command_line->GetSwitchValueASCII(switches::kDisableSpoofing)
++  if (command_line->HasSwitch(::switches::kDisableSpoofing) &&
++      command_line->GetSwitchValueASCII(::switches::kDisableSpoofing)
 +              .find("gpu") != std::string::npos) {
 +    return nullptr;
 +  }
 +
 +  std::string platform = "windows";
-+  if (command_line->HasSwitch(switches::kFingerprintPlatform)) {
++  if (command_line->HasSwitch(::switches::kFingerprintPlatform)) {
 +    platform = base::ToLowerASCII(
-+        command_line->GetSwitchValueASCII(switches::kFingerprintPlatform));
++        command_line->GetSwitchValueASCII(::switches::kFingerprintPlatform));
 +  }
 +
 +  base::span<const WebGLConfig> configs;
@@ -3441,7 +3447,7 @@ index 0000000..2570c04
 +
 +  uint64_t seed = 0;
 +  base::StringToUint64(
-+      command_line->GetSwitchValueASCII(switches::kFingerprint), &seed);
++      command_line->GetSwitchValueASCII(::switches::kFingerprint), &seed);
 +  return &configs[static_cast<size_t>(seed % configs.size())];
 +}
 +
@@ -3656,7 +3662,7 @@ index 0000000..93b9ac0
 +
 +#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_FINGERPRINT_H_
 diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc b/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
-index 27cfed5..af9b966 100644
+index 27cfed5..32f74cd 100644
 --- a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
 +++ b/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
 @@ -32,6 +32,7 @@
@@ -3772,9 +3778,9 @@ index 27cfed5..af9b966 100644
 +
 +    // 添加指纹保护：修改已读取的像素数据
 +    const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+    if (command_line->HasSwitch(switches::kFingerprint) &&
-+        (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+         command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
++    if (command_line->HasSwitch(::switches::kFingerprint) &&
++        (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++         command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
 +      // 构建 SkImageInfo 来描述像素格式
 +      SkColorType color_type;
 +      SkAlphaType alpha_type = kUnpremul_SkAlphaType;
@@ -3800,7 +3806,7 @@ index 27cfed5..af9b966 100644
  }
  
 diff --git a/third_party/blink/renderer/platform/fonts/font_cache.cc b/third_party/blink/renderer/platform/fonts/font_cache.cc
-index 09a2d1c..54acfb7 100644
+index 09a2d1c..e13105b 100644
 --- a/third_party/blink/renderer/platform/fonts/font_cache.cc
 +++ b/third_party/blink/renderer/platform/fonts/font_cache.cc
 @@ -31,19 +31,25 @@
@@ -3956,9 +3962,9 @@ index 09a2d1c..54acfb7 100644
  
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 +  // 字体指纹处理逻辑 - 不应用于最后手段字体
-+  if (command_line->HasSwitch(switches::kFingerprint) &&
-+      (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+       command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("font") == std::string::npos) &&
++  if (command_line->HasSwitch(::switches::kFingerprint) &&
++      (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++       command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("font") == std::string::npos) &&
 +      creation_params.CreationType() == kCreateFontByFamily &&
 +      alternate_font_name != AlternateFontName::kLastResort) {
 +
@@ -3983,7 +3989,7 @@ index 09a2d1c..54acfb7 100644
 +#endif
 +
 +
-+    std::string spoofed_platform = command_line->GetSwitchValueASCII(switches::kFingerprintPlatform);
++    std::string spoofed_platform = command_line->GetSwitchValueASCII(::switches::kFingerprintPlatform);
 +    if (spoofed_platform.empty()) {
 +      spoofed_platform = current_os;
 +    }
@@ -3991,7 +3997,7 @@ index 09a2d1c..54acfb7 100644
 +    std::vector<std::string> current_os_fonts = GetPlatformFonts(current_os);
 +    std::vector<std::string> platform_fonts = GetPlatformFonts(spoofed_platform);
 +
-+    std::string fingerprint = command_line->GetSwitchValueASCII(switches::kFingerprint);
++    std::string fingerprint = command_line->GetSwitchValueASCII(::switches::kFingerprint);
 +    uint32_t hash = std::hash<std::string>{}(fingerprint + requested_family);
 +
 +    if (spoofed_platform != current_os) {
@@ -4026,7 +4032,7 @@ index 09a2d1c..54acfb7 100644
        this, font_description, creation_params, alternate_font_name);
  }
 diff --git a/third_party/blink/renderer/platform/graphics/image_data_buffer.cc b/third_party/blink/renderer/platform/graphics/image_data_buffer.cc
-index 6f1be11..d39333a 100644
+index 6f1be11..9b9c626 100644
 --- a/third_party/blink/renderer/platform/graphics/image_data_buffer.cc
 +++ b/third_party/blink/renderer/platform/graphics/image_data_buffer.cc
 @@ -32,9 +32,12 @@
@@ -4047,9 +4053,9 @@ index 6f1be11..d39333a 100644
                                    const double& quality,
                                    Vector<unsigned char>* encoded_image) const {
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprint) &&
-+      (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+       command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
++  if (command_line->HasSwitch(::switches::kFingerprint) &&
++      (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++       command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
 +    // shuffle subchannel color data within the pixmap
 +    StaticBitmapImage::ShuffleSubchannelColorData(pixmap_.writable_addr(), pixmap_.info());
 +  }
@@ -4057,7 +4063,7 @@ index 6f1be11..d39333a 100644
  }
  
 diff --git a/third_party/blink/renderer/platform/graphics/static_bitmap_image.cc b/third_party/blink/renderer/platform/graphics/static_bitmap_image.cc
-index d5473cf..a631b5f 100644
+index d5473cf..765377e 100644
 --- a/third_party/blink/renderer/platform/graphics/static_bitmap_image.cc
 +++ b/third_party/blink/renderer/platform/graphics/static_bitmap_image.cc
 @@ -4,9 +4,13 @@
@@ -4089,10 +4095,10 @@ index d5473cf..a631b5f 100644
 -    pixels = 2;
 +  std::string seed_str = "0";
 +  const base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kFingerprint) &&
-+      (!command_line->HasSwitch(switches::kDisableSpoofing) ||
-+       command_line->GetSwitchValueASCII(switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
-+      seed_str = command_line->GetSwitchValueASCII(switches::kFingerprint);
++  if (command_line->HasSwitch(::switches::kFingerprint) &&
++      (!command_line->HasSwitch(::switches::kDisableSpoofing) ||
++       command_line->GetSwitchValueASCII(::switches::kDisableSpoofing).find("canvas") == std::string::npos)) {
++      seed_str = command_line->GetSwitchValueASCII(::switches::kFingerprint);
    }
  
    auto colorType = info.colorType();
